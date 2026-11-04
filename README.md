@@ -12,5 +12,5 @@ Aplikasi web berbasis Laravel 13 untuk tugas kuliah. Memungkinkan User untuk men
 
 1. Clone repository ini:
    ```bash
-   git clone https://github.com/USERNAME/event-kita.git
+   git clone https://github.com/si-oss08/event-kita.git
    cd event-kita
