@@ -41,10 +41,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         // Dashboard Admin
         Route::get('/dashboard', [EventController::class, 'dashboard'])->name('dashboard');
         
-        // CRUD Event (Create & Store)
+        // CRUD Event (Create, Store, Edit, Update)
         Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
         Route::post('/events', [EventController::class, 'store'])->name('events.store');
-        
+        Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
+        Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
+
         // Verifikasi Pendaftar
         Route::get('/pendaftar', [RegistrasiController::class, 'adminPendaftar'])->name('pendaftar');
         Route::put('/pendaftar/{id}/verifikasi', [RegistrasiController::class, 'verifikasi'])->name('pendaftar.verifikasi');

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class EventController extends Controller
@@ -63,6 +64,61 @@ class EventController extends Controller
         ]);
 
         return redirect()->route('admin.dashboard')->with('success', 'Event berhasil dibuat!');
+    }
+
+    public function edit(Event $event)
+    {
+        // Admin hanya boleh mengedit event miliknya sendiri
+        abort_unless((int) $event->admin_id === (int) Auth::guard('admin')->id(), 403);
+
+        return view('admin.events.edit', compact('event'));
+    }
+
+    public function update(Request $request, Event $event)
+    {
+        // Admin hanya boleh mengupdate event miliknya sendiri
+        abort_unless((int) $event->admin_id === (int) Auth::guard('admin')->id(), 403);
+
+        // Validasi sama seperti method store
+        $request->validate([
+            'judul' => 'required|string|max:255',
+            'deskripsi' => 'required|string',
+            'lokasi' => 'required|string',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'kuota' => 'required|integer|min:1',
+            'harga' => 'required|numeric|min:0',
+            'status' => 'required|in:draft,publish',
+            'poster' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        // Gunakan poster lama secara default
+        $posterPath = $event->poster;
+
+        // Jika admin mengunggah poster baru
+        if ($request->hasFile('poster')) {
+            // Hapus poster lama dari storage jika ada
+            if ($event->poster) {
+                Storage::disk('public')->delete($event->poster);
+            }
+
+            // Simpan poster baru
+            $posterPath = $request->file('poster')->store('posters', 'public');
+        }
+
+        $event->update([
+            'judul' => $request->judul,
+            'deskripsi' => $request->deskripsi,
+            'lokasi' => $request->lokasi,
+            'tanggal_mulai' => $request->tanggal_mulai,
+            'tanggal_selesai' => $request->tanggal_selesai,
+            'kuota' => $request->kuota,
+            'harga' => $request->harga,
+            'poster' => $posterPath,
+            'status' => $request->status,
+        ]);
+
+        return redirect()->route('admin.dashboard')->with('success', 'Event berhasil diperbarui!');
     }
 
     public function index()
